@@ -1,14 +1,11 @@
 import math as m
 import re
 
-
 import click
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.io import loadmat
 import torch
-
-
 
 
 class Mesure:
@@ -24,12 +21,21 @@ def fv_exp(x, y, sigma):
     return(torch.exp(-torch.norm(((x-y)/sigma))**2)) # Compute the norm in the hilbert space using RKHS
 
 def test_j1_torch(alpha, mu, sigmaV):
-  return(torch.sum(torch.mul(torch.mm(alpha, torch.t(alpha)), ker_mat_torch(torch.sum((torch.transpose(mu.point[np.newaxis, :, :], 1, 0)-mu.point)**2, dim = 2), sigmaV))))
+  return(torch.sum(torch.mul(torch.mm(alpha, torch.t(alpha)), ker_mat_torch(\
+      torch.sum((torch.transpose(mu.point[np.newaxis, :, :], 1, 0)-mu.point)**2, dim = 2), sigmaV))))
 
 def test_j2_torch(alpha, mu, nu, p, sigmaI):
-  A = torch.sum(torch.mul(torch.mm(mu.poid[:, np.newaxis], torch.t(mu.poid[:, np.newaxis])), ker_mat_torch(torch.sum((torch.transpose(p[np.newaxis, :, :], 1, 0)- p)**2, dim = 2), sigmaI)))
-  B = torch.sum(torch.mul(-2 * torch.mm(mu.poid[:, np.newaxis], torch.t(nu.poid[:, np.newaxis])), ker_mat_torch(torch.sum((torch.transpose(p[np.newaxis, :, :], 1, 0) - nu.point)**2, dim = 2), sigmaI)))
-  C = torch.sum(torch.mul(torch.mm(nu.poid[:, np.newaxis], torch.t(nu.poid[:, np.newaxis])), ker_mat_torch(torch.sum((torch.transpose(nu.point[np.newaxis, :, :], 1, 0) - nu.point)**2, dim = 2), sigmaI)))
+  A = torch.sum(torch.mul(torch.mm(mu.poid[:, np.newaxis], torch.t(mu.poid[:, \
+      np.newaxis])), ker_mat_torch(torch.sum((torch.transpose(p[np.newaxis, :, \
+          :], 1, 0)- p)**2, dim = 2), sigmaI)))
+          
+  B = torch.sum(torch.mul(-2 * torch.mm(mu.poid[:, np.newaxis], torch.t(nu.poid\
+      [:, np.newaxis])), ker_mat_torch(torch.sum((torch.transpose(p[np.newaxis,\
+           :, :], 1, 0) - nu.point)**2, dim = 2), sigmaI)))
+
+  C = torch.sum(torch.mul(torch.mm(nu.poid[:, np.newaxis], torch.t(nu.poid[:, \
+      np.newaxis])), ker_mat_torch(torch.sum((torch.transpose(nu.point[np.newaxis\
+          , :, :], 1, 0) - nu.point)**2, dim = 2), sigmaI)))
   return(A + B + C)
 
 def grad_descent2(mu, nu, delta, n, sigmaI, sigmaV, sigmaR, alpha):
@@ -46,7 +52,8 @@ def grad_descent2(mu, nu, delta, n, sigmaI, sigmaV, sigmaR, alpha):
     return(alpha)
 
 def construction_v(mu, alpha1, sigmaV):
-  v_opt = torch.mm(torch.t(ker_mat_torch(torch.sum((torch.transpose(mu.point[np.newaxis, :, :], 1, 0)-mu.point)**2, dim = 2), sigmaV)), alpha1)
+  v_opt = torch.mm(torch.t(ker_mat_torch(torch.sum((torch.transpose(mu.point[np.newaxis, :, :], 1, 0)\
+      -mu.point)**2, dim = 2), sigmaV)), alpha1)
   return(v_opt)
 
 def import_matrices(origin_name):
@@ -76,13 +83,15 @@ def main(*args, **kwargs):
     nu = Mesure(torch.tensor(y4, dtype = torch.float32), 10*torch.rand(y4.shape[0])) # Target points again with randomized weights
 
     alpha_0 = torch.zeros(np.shape(mu.point), requires_grad = True)
-    alpha_test = grad_descent2(mu, nu, 0.0000000001, 20, sigmaI, sigmaV, sigmaR, alpha_0 )
+    alpha_test = grad_descent2(mu, nu, 0.0000000001, 20, sigmaI, sigmaV, sigmaR,\
+         alpha_0 )
     v_test = construction_v(mu, alpha_test, sigmaV)
 
     if FLAG_PRECISION == True:
         for j in range(4):
             sigmaI = sigmaI/2
-            alpha_test = grad_descent2(mu, nu, 0.0000000001, 100, sigmaI, sigmaV, sigmaR, alpha_test)
+            alpha_test = grad_descent2(mu, nu, 0.0000000001, 100, sigmaI, sigmaV\
+                , sigmaR, alpha_test)
 
     v_test = construction_v(mu, alpha_test, sigmaV).detach().numpy()
     plt.title("Appariemment de points :")
